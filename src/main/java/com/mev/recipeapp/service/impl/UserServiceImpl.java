@@ -9,7 +9,6 @@ import com.mev.recipeapp.repository.UserRepository;
 import com.mev.recipeapp.security.jwt.JwtUtil;
 import com.mev.recipeapp.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
