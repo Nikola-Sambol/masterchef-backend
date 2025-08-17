@@ -123,7 +123,7 @@ public class RecipeServiceImpl implements RecipeService {
                         p.getRecipeName(),
                         p.getCreationDate() != null ? p.getCreationDate().toString() : null,
                         encodeToBase64(p.getImagePath()),
-                        p.getVideoPath(),
+                        null,
                         p.getPreparationTime(),
                         null, // components null
                         null, // category null
@@ -145,7 +145,7 @@ public class RecipeServiceImpl implements RecipeService {
                         recipe.getRecipeName(),
                         recipe.getCreationDate().toString(),
                         encodeToBase64(recipe.getImage()),
-                        encodeToBase64(recipe.getVideo()),
+                        null,
                         recipe.getPreparationTime(),
                         null,
                         null,
@@ -205,7 +205,7 @@ public class RecipeServiceImpl implements RecipeService {
                     recipe.getRecipeName(),
                     recipe.getCreationDate().toString(),
                     encodeToBase64(recipe.getImage()),
-                    encodeToBase64(recipe.getVideo()),
+                    null,
                     recipe.getPreparationTime(),
                     null,
                     null,
