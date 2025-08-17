@@ -29,11 +29,13 @@ public class Recipe {
     @Column(name="creation_date", updatable = false, insertable = false)
     private LocalDate creationDate;
 
-    @Column(name="image_path", columnDefinition="TEXT")
-    private String imagePath;
+    @Lob
+    @Column(name="image", columnDefinition="LONGBLOB")
+    private byte[] image;
 
-    @Column(name="video_path", columnDefinition="TEXT")
-    private String videoPath;
+    @Lob
+    @Column(name="video", columnDefinition="LONGBLOB")
+    private byte[] video;
 
     @Column(name="preparation_time", columnDefinition="TEXT")
     private String preparationTime;
@@ -52,10 +54,10 @@ public class Recipe {
     @JsonIgnore
     private Category category;
 
-    public Recipe(String recipeName, String imagePath, String videoPath, String preparationTime, User user, Category category) {
+    public Recipe(String recipeName, byte[] image, byte[] video, String preparationTime, User user, Category category) {
         this.recipeName = recipeName;
-        this.imagePath = imagePath;
-        this.videoPath = videoPath;
+        this.image = image;
+        this.video = video;
         this.preparationTime = preparationTime;
         this.user = user;
         this.category = category;

@@ -62,14 +62,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public void deleteVideo(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(() -> new IllegalArgumentException("Recipe not found with id: " + recipeId));
-        String existingImagePath = recipe.getVideoPath();
-        try {
-            Path deletePath = Paths.get(existingImagePath);
 
-            Files.delete(deletePath);
-        } catch (IOException e) {
-            log.error("Greška prilikom brisanja slike: " + existingImagePath, e);
-        }
     }
 
     private String generateFileName(MultipartFile file) {

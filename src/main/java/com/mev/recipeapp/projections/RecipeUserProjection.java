@@ -6,7 +6,7 @@ public interface RecipeUserProjection {
     Long getId();
     String getRecipeName();
     LocalDate getCreationDate();
-    String getImagePath();
+    byte[] getImagePath();
     String getVideoPath();
     String getPreparationTime();
     String getUserName();

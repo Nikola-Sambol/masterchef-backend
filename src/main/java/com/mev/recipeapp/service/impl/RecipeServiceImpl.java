@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,9 +29,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
 
-    private final ImageService imageService;
 
-    private final VideoService videoService;
 
     private final CategoryRepository categoryRepository;
 
@@ -41,7 +40,6 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public Recipe createRecipe(CreateRecipeRequest recipeRequest, String email) {
         User user = userRepository.findByEmailWithRole(email);
-
         if (user == null) {
             throw new RuntimeException("User with email: " + email + " does not exist!");
         }
@@ -49,21 +47,32 @@ public class RecipeServiceImpl implements RecipeService {
         Category category = categoryRepository.findById(recipeRequest.getCategory())
                 .orElseThrow(() -> new RuntimeException("Kategorija s id: " + recipeRequest.getCategory() + " ne postoji!"));
 
-        Recipe recipe = new Recipe(recipeRequest.getName(),
-                imageService.saveImage(recipeRequest.getImage()),
-                videoService.saveVideo(recipeRequest.getVideo()),
-                recipeRequest.getPreparationTime(),
-                user,
-                category);
+        Recipe recipe = new Recipe();
+        recipe.setRecipeName(recipeRequest.getName());
+        recipe.setPreparationTime(recipeRequest.getPreparationTime());
+        recipe.setUser(user);
+        recipe.setCategory(category);
+
+        try {
+            if (recipeRequest.getImage() != null && !recipeRequest.getImage().isEmpty()) {
+                recipe.setImage(recipeRequest.getImage().getBytes());
+            }
+            if (recipeRequest.getVideo() != null && !recipeRequest.getVideo().isEmpty()) {
+                recipe.setVideo(recipeRequest.getVideo().getBytes());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Greška pri spremanju slike ili videa!", e);
+        }
 
         return recipeRepository.save(recipe);
     }
 
 
+
     @Override
     public Recipe updateRecipe(Long id, CreateRecipeRequest recipeRequest) {
         Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe with id: " + id + "does not exist!"));
+                .orElseThrow(() -> new RuntimeException("Recipe with id: " + id + " does not exist!"));
 
         Category category = categoryRepository.findById(recipeRequest.getCategory())
                 .orElseThrow(() -> new RuntimeException("Kategorija s id: " + recipeRequest.getCategory() + " ne postoji!"));
@@ -72,20 +81,17 @@ public class RecipeServiceImpl implements RecipeService {
             recipe.setRecipeName(recipeRequest.getName());
         }
 
-        if (recipeRequest.getImage() != null && !recipeRequest.getImage().isEmpty()) {
-            recipe.setImagePath(imageService.saveImageAndDeleteExisting(recipeRequest.getImage(), id));
-        }
-
-        if (recipeRequest.getVideo() != null) {
-            if (recipe.getVideoPath() != null) {
-                videoService.deleteVideo(id);
+        try {
+            if (recipeRequest.getImage() != null && !recipeRequest.getImage().isEmpty()) {
+                recipe.setImage(recipeRequest.getImage().getBytes());
             }
-            recipe.setVideoPath(videoService.saveVideo(recipeRequest.getVideo()));
-        } else {
-            if (recipe.getVideoPath() != null) {
-                videoService.deleteVideo(id);
+            if (recipeRequest.getVideo() != null && !recipeRequest.getVideo().isEmpty()) {
+                recipe.setVideo(recipeRequest.getVideo().getBytes());
+            } else {
+                recipe.setVideo(null);
             }
-            recipe.setVideoPath(null);
+        } catch (Exception e) {
+            throw new RuntimeException("Greška pri ažuriranju slike ili videa!", e);
         }
 
         if (recipeRequest.getPreparationTime() != null && !recipeRequest.getPreparationTime().isBlank()) {
@@ -99,11 +105,9 @@ public class RecipeServiceImpl implements RecipeService {
         return recipeRepository.save(recipe);
     }
 
+
     @Override
     public void deleteRecipeById(Long id) {
-        imageService.deleteImage(id);
-        videoService.deleteVideo(id);
-        componentRepository.findByRecipeId(id).forEach(component -> imageService.deleteImageByPath(component.getImagePath()));
         recipeRepository.deleteById(id);
     }
 
@@ -120,7 +124,7 @@ public class RecipeServiceImpl implements RecipeService {
                         p.getId(),
                         p.getRecipeName(),
                         p.getCreationDate() != null ? p.getCreationDate().toString() : null,
-                        p.getImagePath(),
+                        encodeToBase64(p.getImagePath()),
                         p.getVideoPath(),
                         p.getPreparationTime(),
                         null, // components null
@@ -142,8 +146,8 @@ public class RecipeServiceImpl implements RecipeService {
                         recipe.getId(),
                         recipe.getRecipeName(),
                         recipe.getCreationDate().toString(),
-                        recipe.getImagePath(),
-                        recipe.getVideoPath(),
+                        encodeToBase64(recipe.getImage()),
+                        encodeToBase64(recipe.getVideo()),
                         recipe.getPreparationTime(),
                         null,
                         null,
@@ -164,8 +168,8 @@ public class RecipeServiceImpl implements RecipeService {
                 recipe.getId(),
                 recipe.getRecipeName(),
                 recipe.getCreationDate().toString(),
-                recipe.getImagePath(),
-                recipe.getVideoPath(),
+                encodeToBase64(recipe.getImage()),
+                encodeToBase64(recipe.getVideo()),
                 recipe.getPreparationTime(),
                 components.stream().map(this::mapToComponentDTO).toList(),
                 new CategoryDTO(recipe.getCategory().getName()),
@@ -202,8 +206,8 @@ public class RecipeServiceImpl implements RecipeService {
             RecipeDTO newRecipe = new RecipeDTO(recipe.getId(),
                     recipe.getRecipeName(),
                     recipe.getCreationDate().toString(),
-                    recipe.getImagePath(),
-                    recipe.getVideoPath(),
+                    encodeToBase64(recipe.getImage()),
+                    encodeToBase64(recipe.getVideo()),
                     recipe.getPreparationTime(),
                     null,
                     null,
@@ -219,9 +223,14 @@ public class RecipeServiceImpl implements RecipeService {
         return new ComponentDTO(
                 component.getId(),
                 component.getComponentName(),
-                component.getImagePath(),
+                encodeToBase64(component.getImage()),
                 component.getIngredients() != null ? component.getIngredients().getDescription() : null,
                 component.getInstruction().getDescription()
         );
     }
+
+    private String encodeToBase64(byte[] data) {
+        return data != null ? Base64.getEncoder().encodeToString(data) : null;
+    }
+
 }

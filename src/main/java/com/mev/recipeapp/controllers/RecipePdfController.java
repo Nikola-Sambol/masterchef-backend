@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -57,15 +58,16 @@ public class RecipePdfController {
             Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
 
             // 📷 Slika recepta ako postoji
-            if (recipe.getImagePath() != null && !recipe.getImagePath().isEmpty()) {
+            if (recipe.getImage() != null && !recipe.getImage().isEmpty()) {
                 try {
-                    Image recipeImage = Image.getInstance(recipe.getImagePath());
+                    byte[] imageBytes = Base64.getDecoder().decode(recipe.getImage());
+                    Image recipeImage = Image.getInstance(imageBytes);
                     recipeImage.scaleToFit(500, 300);
                     recipeImage.setAlignment(Element.ALIGN_CENTER);
                     document.add(recipeImage);
                     document.add(new Paragraph("\n")); // razmak ispod slike
                 } catch (Exception e) {
-                    log.warn("Slika nije učitana: {}", e.getMessage());
+                    log.warn("Slika recepta nije učitana: {}", e.getMessage());
                 }
             }
 
@@ -156,7 +158,8 @@ public class RecipePdfController {
                     if (hasImages) {
                         if (component.getImagePath() != null && !component.getImagePath().isEmpty()) {
                             try {
-                                Image img = Image.getInstance(component.getImagePath());
+                                byte[] compImgBytes = Base64.getDecoder().decode(component.getImagePath());
+                                Image img = Image.getInstance(compImgBytes);
                                 img.scaleToFit(60, 60);
                                 PdfPCell imgCell = new PdfPCell(img, true);
                                 imgCell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -176,6 +179,7 @@ public class RecipePdfController {
                             table.addCell(emptyCell);
                         }
                     }
+
                 }
 
                 document.add(table);

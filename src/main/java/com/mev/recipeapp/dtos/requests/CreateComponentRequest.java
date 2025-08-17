@@ -2,6 +2,7 @@ package com.mev.recipeapp.dtos.requests;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -10,6 +11,6 @@ import java.util.List;
 public class CreateComponentRequest {
     private String name;
     private String instructions;
-    private String imageKey;
+    private MultipartFile image;
     private List<String> ingredients;
 }

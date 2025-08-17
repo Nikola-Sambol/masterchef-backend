@@ -12,10 +12,11 @@ public class RecipeDTO {
     private Long id;
     private String recipeName;
     private String creationDate;
-    private String imagePath;
-    private String videoPath;
+    private String image;  // Base64 string
+    private String video;  // Base64 string
     private String preparationTime;
     private List<ComponentDTO> components;
     private CategoryDTO category;
     private UserDTO user;
 }
+

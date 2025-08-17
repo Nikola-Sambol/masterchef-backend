@@ -60,14 +60,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void deleteImage(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(() -> new IllegalArgumentException("Recipe not found with id: " + recipeId));
-        String existingImagePath = recipe.getImagePath();
-        try {
-            Path deletePath = Paths.get(existingImagePath);
 
-            Files.delete(deletePath);
-        } catch (IOException e) {
-            log.error("Greška prilikom brisanja slike: " + existingImagePath, e);
-        }
     }
 
     @Override

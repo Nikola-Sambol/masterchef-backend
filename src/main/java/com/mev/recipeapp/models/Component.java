@@ -23,8 +23,9 @@ public class Component {
     @Column(name="component_name", columnDefinition="TEXT")
     private String componentName;
 
-    @Column(name="image_path", columnDefinition="TEXT")
-    private String imagePath;
+    @Lob
+    @Column(name="image", columnDefinition="LONGBLOB")
+    private byte[] image;
 
     @ManyToOne
     @JoinColumn(name="recipe_id")
@@ -41,9 +42,9 @@ public class Component {
     @JsonIgnore
     private Instruction instruction;
 
-    public Component(String componentName, String imagePath, Recipe recipe, Ingredients ingredients, Instruction instruction) {
+    public Component(String componentName, byte[] image, Recipe recipe, Ingredients ingredients, Instruction instruction) {
         this.componentName = componentName;
-        this.imagePath = imagePath;
+        this.image = image;
         this.recipe = recipe;
         this.ingredients = ingredients;
         this.instruction = instruction;
